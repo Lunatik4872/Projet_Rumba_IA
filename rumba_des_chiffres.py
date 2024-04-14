@@ -21,7 +21,7 @@ def deplacer(e,p1,p2) :
 def estBut(e) :
     return e == but
 
-def opPos(e):
+def opPos(e, g):
     res = []
     for i in range(len(e)):
         if e[i]:
@@ -29,7 +29,7 @@ def opPos(e):
             for j in possible:
                 etat = [pipe[:] for pipe in e]
                 etat = deplacer(etat, i, j)
-                res.append(((i, j), etat, 1))
+                res.append(((i, j), etat, g + 1))
     return res
 
 def nombreMalMis(e):
@@ -45,37 +45,39 @@ def nombreMalMis(e):
 def heuristique(g,h) :
     return g+h
 
-def ProfondeurBornee(seuil,etat,solution) :
+def ProfondeurBornee(seuil,etat) :
     nSeuil = float('inf')
     vus = []
-    enAttente = [etat]
-    g = 1
+    enAttente = [(etat, [etat])]
+    g = 0
 
     while enAttente :
-        prochain = enAttente.pop()
-        vus.insert(0,prochain)
-        solution.append(prochain)
+        prochain, chemin = enAttente.pop()
+        vus.append(prochain)
         if estBut(prochain) :
-            return True
+            return chemin 
         else :
-            g+=1
-            for e in opPos(prochain) :
-                h = heuristique(g,nombreMalMis(e[1]))
+            for e in opPos(prochain, g):
+                h = heuristique(e[2], nombreMalMis(e[1]))
                 if(e[1] not in vus and h <= seuil[0]) :
-                    enAttente.insert(0,e[1])
+                    enAttente.insert(0, (e[1], chemin + [e[1]]))
                 else :
                     nSeuil = min(nSeuil,h)
         
-    if(nSeuil == float('inf')) : return True
+    if(nSeuil == float('inf')) : return []
     else :
         seuil[0] = nSeuil
-        return False
+        return []
 
-def IDAstar(init) :
-    solution = []
-    seuil = [heuristique(0,nombreMalMis(init))]
-    while not ProfondeurBornee(seuil,init,solution) : continue
-    return solution if solution else "Echec de la resolution"
+def IDAstar(init):
+    seuil = [heuristique(0, nombreMalMis(init))]
+    while True:
+        solution = ProfondeurBornee(seuil, init)
+        if solution:
+            return solution
+        elif not seuil[0] < float('inf'):
+            return "Echec de la resolution"
+
 
 RumbaGame_1 = [[2,3],[1],[4,5,6],[7,8,9]]
 RumbaGame_2 = [[1,2,3],[4,5,6],[7,8,9],[]]
@@ -87,7 +89,7 @@ but_4 = [[2,1,3],[5,4,6],[8,7,9],[]]
 but_5 = [[8,2,3],[4,6],[5,7,9],[1]]
 but_6 = [[1,7,4],[2,8,5],[3,9,6],[]]
 
-but = but_3
+but = but_5
 RumbaGame = RumbaGame_2
 
 # afficherEtat(RumbaGame)
@@ -103,7 +105,7 @@ RumbaGame = RumbaGame_2
 res = IDAstar(RumbaGame)
 for e in res :
     afficherEtat(e)
-
+print(len(res))
 
 
 
