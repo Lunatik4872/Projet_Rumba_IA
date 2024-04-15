@@ -45,22 +45,25 @@ def nombreMalMis(e):
 def heuristique(g,h) :
     return g+h
 
+from collections import deque
+
 def ProfondeurBornee(seuil,etat) :
     nSeuil = float('inf')
-    vus = []
-    enAttente = [(etat, [etat])]
-    g = 0
+    vus = set()
+    enAttente = deque([(etat, [etat])])
+    g = 1
 
     while enAttente :
         prochain, chemin = enAttente.pop()
-        vus.append(prochain)
         if estBut(prochain) :
+            vus.add(tuple(map(tuple, prochain)))
             return chemin 
         else :
+            vus.add(tuple(map(tuple, prochain)))
             for e in opPos(prochain, g):
                 h = heuristique(e[2], nombreMalMis(e[1]))
-                if(e[1] not in vus and h <= seuil[0]) :
-                    enAttente.insert(0, (e[1], chemin + [e[1]]))
+                if(tuple(map(tuple, e[1])) not in vus and h <= seuil[0]) :
+                    enAttente.appendleft((e[1], chemin + [e[1]]))
                 else :
                     nSeuil = min(nSeuil,h)
         
@@ -69,6 +72,7 @@ def ProfondeurBornee(seuil,etat) :
         seuil[0] = nSeuil
         return []
 
+
 def IDAstar(init):
     seuil = [heuristique(0, nombreMalMis(init))]
     while True:
@@ -76,7 +80,7 @@ def IDAstar(init):
         if solution:
             return solution
         elif not seuil[0] < float('inf'):
-            return "Echec de la resolution"
+            return None
 
 
 RumbaGame_1 = [[2,3],[1],[4,5,6],[7,8,9]]
@@ -103,8 +107,11 @@ RumbaGame = RumbaGame_2
 # print(heuristique(2,nombreMalMis(RumbaGame,but)))
 
 res = IDAstar(RumbaGame)
-for e in res :
-    afficherEtat(e)
+if res :
+    for e in res :
+        afficherEtat(e)
+else : 
+    print("Echec de la resolution" )
 print(len(res))
 
 
