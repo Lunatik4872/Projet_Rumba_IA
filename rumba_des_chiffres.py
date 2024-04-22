@@ -21,7 +21,7 @@ def deplacer(e,p1,p2) :
 def estBut(e) :
     return e == but
 
-def opPos(e, g):
+def opPos(e):
     res = []
     for i in range(len(e)):
         if e[i]:
@@ -29,7 +29,7 @@ def opPos(e, g):
             for j in possible:
                 etat = [pipe[:] for pipe in e]
                 etat = deplacer(etat, i, j)
-                res.append(((i, j), etat, g + 1))
+                res.append(((i, j), etat, 1))
     return res
 
 def nombreMalMis(e):
@@ -42,6 +42,28 @@ def nombreMalMis(e):
                 res += 1
     return res
 
+def profondeurMalPlace(e):
+    res = 0
+    for i in range(len(e)):
+        e_padded = [0] * (len(but[i]) - len(e[i])) + e[i]
+        but_padded = [0] * (len(e[i]) - len(but[i])) + but[i]
+        for j in range(len(e_padded)):
+            if e_padded[j] != but_padded[j] and e_padded[j] != 0 :
+                res += j+1
+    return res
+
+def cubesASupprimer(e):
+    res = 0
+    for i in range(len(e)):
+        e_padded = [0] * (len(but[i]) - len(e[i])) + e[i]
+        but_padded = [0] * (len(e[i]) - len(but[i])) + but[i]
+        for j in range(len(e_padded)):
+            if e_padded[j] != but_padded[j] and e_padded[j] != 0 :
+                res += j+1
+                res += len([x for x in e_padded[j+1:] if x != 0])
+                res += len([x for x in but_padded[j+1:] if x != e_padded[j]])
+    return res
+
 def heuristique(g,h) :
     return g+h
 
@@ -49,20 +71,23 @@ from collections import deque
 
 def ProfondeurBornee(seuil,etat) :
     nSeuil = float('inf')
-    vus = set()
+    vus = {}
+    g = 0
     enAttente = deque([(etat, [etat])])
-    g = 1
 
     while enAttente :
         prochain, chemin = enAttente.pop()
+        prochain_tuple = tuple(map(tuple, prochain))
         if estBut(prochain) :
-            vus.add(tuple(map(tuple, prochain)))
+            vus[prochain_tuple] = True
             return chemin 
         else :
-            vus.add(tuple(map(tuple, prochain)))
-            for e in opPos(prochain, g):
-                h = heuristique(e[2], nombreMalMis(e[1]))
-                if(tuple(map(tuple, e[1])) not in vus and h <= seuil[0]) :
+            vus[prochain_tuple] = True
+            g+=1
+            for e in opPos(prochain):
+                e_tuple = tuple(map(tuple, e[1]))
+                h = heuristique(g, profondeurMalPlace(e[1]))
+                if(e_tuple not in vus and h <= seuil[0]) :
                     enAttente.appendleft((e[1], chemin + [e[1]]))
                 else :
                     nSeuil = min(nSeuil,h)
@@ -72,9 +97,8 @@ def ProfondeurBornee(seuil,etat) :
         seuil[0] = nSeuil
         return []
 
-
 def IDAstar(init):
-    seuil = [heuristique(0, nombreMalMis(init))]
+    seuil = [heuristique(0, profondeurMalPlace(init))]
     while True:
         solution = ProfondeurBornee(seuil, init)
         if solution:
@@ -93,7 +117,7 @@ but_4 = [[2,1,3],[5,4,6],[8,7,9],[]]
 but_5 = [[8,2,3],[4,6],[5,7,9],[1]]
 but_6 = [[1,7,4],[2,8,5],[3,9,6],[]]
 
-but = but_5
+but = but_4
 RumbaGame = RumbaGame_2
 
 # afficherEtat(RumbaGame)
@@ -110,9 +134,10 @@ res = IDAstar(RumbaGame)
 if res :
     for e in res :
         afficherEtat(e)
+    print(len(res))
 else : 
     print("Echec de la resolution" )
-print(len(res))
+
 
 
 
