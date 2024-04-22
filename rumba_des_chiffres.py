@@ -32,36 +32,32 @@ def opPos(e):
                 res.append(((i, j), etat, 1))
     return res
 
-def nombreMalMis(e):
-    res = 0
-    for i in range(len(e)):
-        e_padded = [0] * (len(but[i]) - len(e[i])) + e[i]
-        but_padded = [0] * (len(e[i]) - len(but[i])) + but[i]
-        for j in range(len(e_padded)):
-            if e_padded[j] != but_padded[j] and e_padded[j] != 0 :
-                res += 1
-    return res
-
 def profondeurMalPlace(e):
     res = 0
     for i in range(len(e)):
-        e_padded = [0] * (len(but[i]) - len(e[i])) + e[i]
-        but_padded = [0] * (len(e[i]) - len(but[i])) + but[i]
-        for j in range(len(e_padded)):
-            if e_padded[j] != but_padded[j] and e_padded[j] != 0 :
+        e_p = [0] * (len(but[i]) - len(e[i])) + e[i]
+        but_p = [0] * (len(e[i]) - len(but[i])) + but[i]
+        for j in range(len(e_p)):
+            if e_p[j] != but_p[j] and e_p[j] != 0 :
                 res += j+1
     return res
 
-def cubesASupprimer(e):
+import numpy as np
+
+def manatthan(e) :
     res = 0
-    for i in range(len(e)):
-        e_padded = [0] * (len(but[i]) - len(e[i])) + e[i]
-        but_padded = [0] * (len(e[i]) - len(but[i])) + but[i]
-        for j in range(len(e_padded)):
-            if e_padded[j] != but_padded[j] and e_padded[j] != 0 :
-                res += j+1
-                res += len([x for x in e_padded[j+1:] if x != 0])
-                res += len([x for x in but_padded[j+1:] if x != e_padded[j]])
+    e_np = []
+    but_np = []
+    for i in range(len(e)) :
+        e_np += [[0] * (3-len(e[i])) + e[i]]
+        but_np += [[0] * (3-len(but[i])) + but[i]]
+
+    but_np = np.array(but)
+    e_np = np.array(e)
+    for i in range(len(e)) :
+        for j in range(len(e[0])) :
+            if e[i][j] != 0 :
+                res+= abs(np.where(but_np==e_np[i][j])[0][0] - i) + abs(np.where(but_np==e_np[i][j])[0][1] - j)
     return res
 
 def heuristique(g,h) :
@@ -72,7 +68,6 @@ from collections import deque
 def ProfondeurBornee(seuil,etat) :
     nSeuil = float('inf')
     vus = {}
-    g = 0
     enAttente = deque([(etat, [etat])])
 
     while enAttente :
@@ -83,22 +78,21 @@ def ProfondeurBornee(seuil,etat) :
             return chemin 
         else :
             vus[prochain_tuple] = True
-            g+=1
             for e in opPos(prochain):
                 e_tuple = tuple(map(tuple, e[1]))
-                h = heuristique(g, profondeurMalPlace(e[1]))
+                h = profondeurMalPlace(e[1])
                 if(e_tuple not in vus and h <= seuil[0]) :
                     enAttente.appendleft((e[1], chemin + [e[1]]))
                 else :
                     nSeuil = min(nSeuil,h)
         
-    if(nSeuil == float('inf')) : return []
+    if(nSeuil == float('inf')) : return chemin
     else :
         seuil[0] = nSeuil
         return []
 
 def IDAstar(init):
-    seuil = [heuristique(0, profondeurMalPlace(init))]
+    seuil = [profondeurMalPlace(init)]
     while True:
         solution = ProfondeurBornee(seuil, init)
         if solution:
@@ -117,8 +111,8 @@ but_4 = [[2,1,3],[5,4,6],[8,7,9],[]]
 but_5 = [[8,2,3],[4,6],[5,7,9],[1]]
 but_6 = [[1,7,4],[2,8,5],[3,9,6],[]]
 
-but = but_4
-RumbaGame = RumbaGame_2
+but = but_6
+RumbaGame = RumbaGame_1
 
 # afficherEtat(RumbaGame)
 # afficherEtat(but)
@@ -137,9 +131,3 @@ if res :
     print(len(res))
 else : 
     print("Echec de la resolution" )
-
-
-
-
-
-
