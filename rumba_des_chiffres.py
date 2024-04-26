@@ -57,7 +57,9 @@ def ProfondeurBornee(etat,but,g,seuil,chemin) :
     for e in opPos(etat) :
         if e[1] not in chemin :
             trouve = ProfondeurBornee(e[1],but,g+1,seuil,chemin)
-            if trouve == True : return True
+            if trouve == True : 
+                if len(chemin) == 1 : chemin.append(e[1])
+                return True
             if trouve < nSeuil : nSeuil = trouve
     chemin.remove(etat)
     
@@ -83,8 +85,8 @@ but_4 = [[2,1,3],[5,4,6],[8,7,9],[]]
 but_5 = [[8,2,3],[4,6],[5,7,9],[1]]
 but_6 = [[1,7,4],[2,8,5],[3,9,6],[]]
 
-but = but_6
-RumbaGame = RumbaGame_1
+but = but_3
+RumbaGame = RumbaGame_2
 
 # afficherEtat(RumbaGame)
 # afficherEtat(but)
