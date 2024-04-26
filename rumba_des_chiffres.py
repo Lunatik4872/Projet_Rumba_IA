@@ -39,7 +39,7 @@ def profondeurMalPlace(e,but):
         but_p = [0] * (len(e[i]) - len(but[i])) + but[i]
         for j in range(len(e_p)):
             if e_p[j] != but_p[j] and e_p[j] != 0 :
-                res += j+1
+                res += j
     return res
 
 def ProfondeurBornee(etat,but,g,seuil,chemin) :
@@ -83,7 +83,7 @@ but_4 = [[2,1,3],[5,4,6],[8,7,9],[]]
 but_5 = [[8,2,3],[4,6],[5,7,9],[1]]
 but_6 = [[1,7,4],[2,8,5],[3,9,6],[]]
 
-but = but_2
+but = but_6
 RumbaGame = RumbaGame_1
 
 # afficherEtat(RumbaGame)
