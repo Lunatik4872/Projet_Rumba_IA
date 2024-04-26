@@ -18,7 +18,7 @@ def deplacer(e,p1,p2) :
     e[p2].insert(0,elt)
     return e
 
-def estBut(e) :
+def estBut(e,but) :
     return e == but
 
 def opPos(e):
@@ -32,7 +32,7 @@ def opPos(e):
                 res.append(((i, j), etat, 1))
     return res
 
-def profondeurMalPlace(e):
+def profondeurMalPlace(e,but):
     res = 0
     for i in range(len(e)):
         e_p = [0] * (len(but[i]) - len(e[i])) + e[i]
@@ -42,64 +42,36 @@ def profondeurMalPlace(e):
                 res += j+1
     return res
 
-import numpy as np
+def ProfondeurBornee(etat,but,g,seuil,chemin) :
+    f = g + profondeurMalPlace(etat,but)
 
-def manatthan(e) :
-    res = 0
-    e_np = []
-    but_np = []
-    for i in range(len(e)) :
-        e_np += [[0] * (3-len(e[i])) + e[i]]
-        but_np += [[0] * (3-len(but[i])) + but[i]]
-
-    but_np = np.array(but)
-    e_np = np.array(e)
-    for i in range(len(e)) :
-        for j in range(len(e[0])) :
-            if e[i][j] != 0 :
-                res+= abs(np.where(but_np==e_np[i][j])[0][0] - i) + abs(np.where(but_np==e_np[i][j])[0][1] - j)
-    return res
-
-def heuristique(g,h) :
-    return g+h
-
-from collections import deque
-
-def ProfondeurBornee(seuil,etat) :
+    if f > seuil :
+        return f
+    
+    if estBut(etat,but) :
+        chemin.append(etat)
+        return True
+    
     nSeuil = float('inf')
-    vus = {}
-    enAttente = deque([(etat, [etat])])
+    chemin.append(etat)
+    for e in opPos(etat) :
+        if e[1] not in chemin :
+            trouve = ProfondeurBornee(e[1],but,g+1,seuil,chemin)
+            if trouve == True : return True
+            if trouve < nSeuil : nSeuil = trouve
+    chemin.remove(etat)
+    
+    return nSeuil
 
-    while enAttente :
-        prochain, chemin = enAttente.pop()
-        prochain_tuple = tuple(map(tuple, prochain))
-        if estBut(prochain) :
-            vus[prochain_tuple] = True
-            return chemin 
-        else :
-            vus[prochain_tuple] = True
-            for e in opPos(prochain):
-                e_tuple = tuple(map(tuple, e[1]))
-                h = profondeurMalPlace(e[1])
-                if(e_tuple not in vus and h <= seuil[0]) :
-                    enAttente.appendleft((e[1], chemin + [e[1]]))
-                else :
-                    nSeuil = min(nSeuil,h)
-        
-    if(nSeuil == float('inf')) : return chemin
-    else :
-        seuil[0] = nSeuil
-        return []
+def IDAStar(init,but) :
+    seuil = profondeurMalPlace(init,but)
+    chemin = []
 
-def IDAstar(init):
-    seuil = [profondeurMalPlace(init)]
-    while True:
-        solution = ProfondeurBornee(seuil, init)
-        if solution:
-            return solution
-        elif not seuil[0] < float('inf'):
-            return None
-
+    while True :
+        trouve = ProfondeurBornee(init,but,0,seuil,chemin)
+        if trouve == True : return chemin
+        elif trouve == float('inf') : return []
+        else : seuil = trouve
 
 RumbaGame_1 = [[2,3],[1],[4,5,6],[7,8,9]]
 RumbaGame_2 = [[1,2,3],[4,5,6],[7,8,9],[]]
@@ -111,7 +83,7 @@ but_4 = [[2,1,3],[5,4,6],[8,7,9],[]]
 but_5 = [[8,2,3],[4,6],[5,7,9],[1]]
 but_6 = [[1,7,4],[2,8,5],[3,9,6],[]]
 
-but = but_6
+but = but_2
 RumbaGame = RumbaGame_1
 
 # afficherEtat(RumbaGame)
@@ -124,7 +96,7 @@ RumbaGame = RumbaGame_1
 # print(nombreMalMis(RumbaGame,but))
 # print(heuristique(2,nombreMalMis(RumbaGame,but)))
 
-res = IDAstar(RumbaGame)
+res = IDAStar(RumbaGame,but)
 if res :
     for e in res :
         afficherEtat(e)
