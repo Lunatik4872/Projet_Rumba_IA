@@ -56,7 +56,7 @@ def ProfondeurBornee(etat,but,g,seuil,chemin) :
     chemin.append(etat)
     for e in opPos(etat) :
         if e[1] not in chemin :
-            trouve = ProfondeurBornee(e[1],but,g+1,seuil,chemin)
+            trouve = ProfondeurBornee(e[1],but,g+e[2],seuil,chemin)
             if trouve == True : 
                 if len(chemin) == 1 : chemin.append(e[1])
                 return True
@@ -85,23 +85,13 @@ but_4 = [[2,1,3],[5,4,6],[8,7,9],[]]
 but_5 = [[8,2,3],[4,6],[5,7,9],[1]]
 but_6 = [[1,7,4],[2,8,5],[3,9,6],[]]
 
-but = but_3
+but = but_4
 RumbaGame = RumbaGame_2
-
-# afficherEtat(RumbaGame)
-# afficherEtat(but)
-# print(trouverDestinations(RumbaGame,1))
-# deplacer(RumbaGame,0,1)
-# afficherEtat(RumbaGame)
-# print(estBut(RumbaGame,but))
-# print(opPos(RumbaGame))
-# print(nombreMalMis(RumbaGame,but))
-# print(heuristique(2,nombreMalMis(RumbaGame,but)))
 
 res = IDAStar(RumbaGame,but)
 if res :
     for e in res :
         afficherEtat(e)
-    print(len(res))
+    print("Résolution éffectué en "+str(len(res)-1)+" étape(s)")
 else : 
     print("Echec de la resolution" )
