@@ -1,11 +1,12 @@
 def afficherEtat(elt):
     maxi = max(len(sublist) for sublist in elt)
     for level in range(maxi - 1, -1, -1):
+        print("                            ",end="")
         for pipe in elt:
             if level < len(pipe) : print(pipe[-level-1], end=" ")
             else : print(" ", end=" ")
         print("")
-    print("-"*len(elt)*2)
+    print("-"*(len(elt)*18))
 
 def trouverDestinations(e,pi) :
     res = []
@@ -29,7 +30,7 @@ def opPos(e):
             for j in possible:
                 etat = [pipe[:] for pipe in e]
                 etat = deplacer(etat, i, j)
-                res.append(((i, j), etat, 1))
+                res.append(((i+1, j+1), etat, 1))
     return res
 
 def profondeurMalPlace(e,but):
@@ -42,39 +43,60 @@ def profondeurMalPlace(e,but):
                 res += j
     return res
 
-def ProfondeurBornee(etat,but,g,seuil,chemin) :
-    f = g + profondeurMalPlace(etat,but)
+def ProfondeurBornee(etat,but,g,seuil,chemin,mouvement) :
+    f = g + profondeurMalPlace(etat[1],but)
 
     if f > seuil :
         return f
     
-    if estBut(etat,but) :
-        chemin.append(etat)
+    if estBut(etat[1],but) :
+        chemin.append(etat[1])
+        mouvement.append(etat[0])
         return True
     
     nSeuil = float('inf')
-    chemin.append(etat)
-    for e in opPos(etat) :
+    chemin.append(etat[1])
+    mouvement.append(etat[0])
+    for e in opPos(etat[1]) :
         if e[1] not in chemin :
-            trouve = ProfondeurBornee(e[1],but,g+e[2],seuil,chemin)
+            trouve = ProfondeurBornee(e,but,g+e[2],seuil,chemin,mouvement)
             if trouve == True : 
-                if len(chemin) == 1 : chemin.append(e[1])
+                if len(chemin) == 1 : 
+                    chemin.append(e[1])
+                    mouvement.append(e[0])
                 return True
             if trouve < nSeuil : nSeuil = trouve
-    chemin.remove(etat)
+    chemin.remove(etat[1])
+    mouvement.pop()
     
     return nSeuil
 
-def IDAStar(init,but) :
+def IDAStar(init,but,nbIteration) :
     seuil = profondeurMalPlace(init,but)
+    mouvement = []
     chemin = []
+    init = ((0,0),init,0)
 
     while True :
-        trouve = ProfondeurBornee(init,but,0,seuil,chemin)
-        if trouve == True : return chemin
-        elif trouve == float('inf') : return []
+        nbIteration[0]+=1
+        trouve = ProfondeurBornee(init,but,0,seuil,chemin,mouvement)
+        if trouve == True : return chemin,mouvement
+        elif trouve == float('inf') : return [],[]
         else : seuil = trouve
 
+def resoudre(init,but) :
+    nbIteration = [0]
+    res = IDAStar(init,but,nbIteration)
+    if res[0] :
+        for e in range(len(res[0])) :
+            if e != 0 : print("Etape "+str(e)+ " : On déplace l'élement au sommet de la tour "+str(res[1][e][0])+" sur la tour "+str(res[1][e][1])) 
+            else : print("Etat initial :")
+            afficherEtat(res[0][e])
+        print("Le problème a été résolu en "+str(len(res[0])-1)+" étape(s) avec "+str(nbIteration[0])+" parcour(s) en profondeur")
+    else : 
+        print("Echec de la resolution")
+
+############## Valeurs pour tests ##############
 RumbaGame_1 = [[2,3],[1],[4,5,6],[7,8,9]]
 RumbaGame_2 = [[1,2,3],[4,5,6],[7,8,9],[]]
 
@@ -84,14 +106,6 @@ but_3 = [[7,2,3],[8,4,6],[1,5,9],[]]
 but_4 = [[2,1,3],[5,4,6],[8,7,9],[]]
 but_5 = [[8,2,3],[4,6],[5,7,9],[1]]
 but_6 = [[1,7,4],[2,8,5],[3,9,6],[]]
+################################################
 
-but = but_4
-RumbaGame = RumbaGame_2
-
-res = IDAStar(RumbaGame,but)
-if res :
-    for e in res :
-        afficherEtat(e)
-    print("Résolution éffectué en "+str(len(res)-1)+" étape(s)")
-else : 
-    print("Echec de la resolution" )
+resoudre(RumbaGame_2,but_6)
